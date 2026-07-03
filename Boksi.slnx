@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Boksi.Api/Boksi.Api.csproj" />
+  <Project Path="Boksi.Application/Boksi.Application.csproj" />
+  <Project Path="Boksi.Domain/Boksi.Domain.csproj" />
+  <Project Path="Boksi.Infrastructure/Boksi.Infrastructure.csproj" />
+</Solution>
