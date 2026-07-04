@@ -24,5 +24,7 @@ namespace Boksi.Domain.Entities
 
         public Guid ServiceId { get; set; }
         public Service Service { get; set; } = null!;
+
+        public Guid? GroupId { get; set; } // Used for group bookings
     }
 }

@@ -45,5 +45,22 @@ namespace Boksi.Api.Controllers
             
             return Ok(new { Message = "Ustawienia pracownika zaktualizowane." });
         }
+
+        [HttpPost("{id}/gallery")]
+        public async Task<IActionResult> AddGalleryImage(System.Guid id, [FromBody] Boksi.Domain.Entities.GalleryImage image, [FromServices] Boksi.Application.Interfaces.IApplicationDbContext dbContext)
+        {
+            image.EmployeeId = id;
+            dbContext.GalleryImages.Add(image);
+            await dbContext.SaveChangesAsync(default);
+            return Ok(image);
+        }
+
+        [HttpGet("{id}/gallery")]
+        public async Task<IActionResult> GetGalleryImages(System.Guid id, [FromServices] Boksi.Application.Interfaces.IApplicationDbContext dbContext)
+        {
+            var images = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                System.Linq.Queryable.Where(dbContext.GalleryImages, g => g.EmployeeId == id));
+            return Ok(images);
+        }
     }
 }

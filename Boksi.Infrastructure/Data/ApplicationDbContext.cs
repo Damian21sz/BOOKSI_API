@@ -29,6 +29,17 @@ namespace Boksi.Infrastructure.Data
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; } = null!;
         public DbSet<DiscountCode> DiscountCodes { get; set; } = null!;
 
+        public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
+        public DbSet<GalleryImage> GalleryImages { get; set; } = null!;
+        public DbSet<FavoriteSalon> FavoriteSalons { get; set; } = null!;
+        
+        public DbSet<AppointmentReview> AppointmentReviews { get; set; } = null!;
+        public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
+
+        public DbSet<LoyaltyProgramSettings> LoyaltyProgramSettings { get; set; } = null!;
+        public DbSet<ClientLoyaltyCard> ClientLoyaltyCards { get; set; } = null!;
+        public DbSet<MarketingCampaign> MarketingCampaigns { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -40,6 +51,13 @@ namespace Boksi.Infrastructure.Data
             modelBuilder.Entity<Appointment>().IsMultiTenant();
             modelBuilder.Entity<EmployeeSchedule>().IsMultiTenant();
             modelBuilder.Entity<TimeOff>().IsMultiTenant();
+            modelBuilder.Entity<WaitlistEntry>().IsMultiTenant();
+            modelBuilder.Entity<GalleryImage>().IsMultiTenant();
+            modelBuilder.Entity<AppointmentReview>().IsMultiTenant();
+            modelBuilder.Entity<ChatMessage>().IsMultiTenant();
+            modelBuilder.Entity<LoyaltyProgramSettings>().IsMultiTenant();
+            modelBuilder.Entity<ClientLoyaltyCard>().IsMultiTenant();
+            modelBuilder.Entity<MarketingCampaign>().IsMultiTenant();
 
             // Additional configurations if needed
             modelBuilder.Entity<Service>()
