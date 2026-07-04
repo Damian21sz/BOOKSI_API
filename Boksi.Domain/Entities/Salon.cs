@@ -22,5 +22,8 @@ namespace Boksi.Domain.Entities
         public SubscriptionStatus SubscriptionStatus { get; set; } = SubscriptionStatus.Trial;
         public System.DateTime SubscriptionValidUntil { get; set; } = System.DateTime.UtcNow.AddDays(14);
         public decimal BaseSubscriptionPrice { get; set; } = 100.00m; // Default price, could be overridden by plan/admin
+
+        public System.Guid? BusinessCategoryId { get; set; }
+        public BusinessCategory? Category { get; set; }
     }
 }

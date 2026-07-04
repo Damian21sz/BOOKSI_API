@@ -17,6 +17,7 @@ namespace Boksi.Infrastructure.Data
         }
 
         public DbSet<Salon> Salons { get; set; } = null!;
+        public DbSet<BusinessCategory> BusinessCategories { get; set; } = null!;
         public DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
         public DbSet<Service> Services { get; set; } = null!;
         public DbSet<Employee> Employees { get; set; } = null!;

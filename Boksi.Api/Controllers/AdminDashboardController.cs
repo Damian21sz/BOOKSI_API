@@ -72,5 +72,43 @@ namespace Boksi.Api.Controllers
             await _dbContext.SaveChangesAsync(default);
             return Ok();
         }
+
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetBusinessCategories()
+        {
+            var categories = await _dbContext.BusinessCategories.ToListAsync();
+            return Ok(categories);
+        }
+
+        [HttpPost("categories")]
+        public async Task<IActionResult> CreateBusinessCategory([FromBody] BusinessCategory category)
+        {
+            _dbContext.BusinessCategories.Add(category);
+            await _dbContext.SaveChangesAsync(default);
+            return Ok(category);
+        }
+
+        [HttpPut("categories/{id}")]
+        public async Task<IActionResult> UpdateBusinessCategory(Guid id, [FromBody] BusinessCategory updatedCategory)
+        {
+            var category = await _dbContext.BusinessCategories.FindAsync(id);
+            if (category == null) return NotFound();
+
+            category.Name = updatedCategory.Name;
+            category.Description = updatedCategory.Description;
+            await _dbContext.SaveChangesAsync(default);
+            return Ok(category);
+        }
+
+        [HttpDelete("categories/{id}")]
+        public async Task<IActionResult> DeleteBusinessCategory(Guid id)
+        {
+            var category = await _dbContext.BusinessCategories.FindAsync(id);
+            if (category == null) return NotFound();
+
+            _dbContext.BusinessCategories.Remove(category);
+            await _dbContext.SaveChangesAsync(default);
+            return NoContent();
+        }
     }
 }

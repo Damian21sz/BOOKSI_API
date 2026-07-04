@@ -14,6 +14,7 @@ namespace Boksi.Application.Interfaces
         DbSet<TimeOff> TimeOffs { get; }
 
         DbSet<Salon> Salons { get; }
+        DbSet<BusinessCategory> BusinessCategories { get; }
         DbSet<SubscriptionPlan> SubscriptionPlans { get; }
         DbSet<DiscountCode> DiscountCodes { get; }
 
