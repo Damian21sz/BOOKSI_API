@@ -13,6 +13,10 @@ namespace Boksi.Application.Interfaces
         DbSet<EmployeeSchedule> EmployeeSchedules { get; }
         DbSet<TimeOff> TimeOffs { get; }
 
+        DbSet<Salon> Salons { get; }
+        DbSet<SubscriptionPlan> SubscriptionPlans { get; }
+        DbSet<DiscountCode> DiscountCodes { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

@@ -73,6 +73,9 @@ app.UseHttpsRedirection();
 // Finbuckle middleware must be before routing/auth
 app.UseMultiTenant();
 
+app.UseMiddleware<Boksi.Api.Middlewares.SubscriptionRequirementMiddleware>();
+
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

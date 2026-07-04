@@ -24,6 +24,9 @@ namespace Boksi.Infrastructure.Data
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<EmployeeSchedule> EmployeeSchedules { get; set; } = null!;
         public DbSet<TimeOff> TimeOffs { get; set; } = null!;
+        
+        public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; } = null!;
+        public DbSet<DiscountCode> DiscountCodes { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,6 +43,18 @@ namespace Boksi.Infrastructure.Data
             // Additional configurations if needed
             modelBuilder.Entity<Service>()
                 .Property(s => s.Price)
+                .HasColumnType("decimal(18,2)");
+                
+            modelBuilder.Entity<SubscriptionPlan>()
+                .Property(p => p.PricePerMonth)
+                .HasColumnType("decimal(18,2)");
+                
+            modelBuilder.Entity<DiscountCode>()
+                .Property(d => d.Value)
+                .HasColumnType("decimal(18,2)");
+                
+            modelBuilder.Entity<Salon>()
+                .Property(s => s.BaseSubscriptionPrice)
                 .HasColumnType("decimal(18,2)");
         }
     }
