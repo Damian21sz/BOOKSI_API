@@ -3,16 +3,16 @@ using Finbuckle.MultiTenant;
 using Finbuckle.MultiTenant.Abstractions;
 using Finbuckle.MultiTenant.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+
+using Boksi.Application.Interfaces;
 
 namespace Boksi.Infrastructure.Data
 {
-    public class ApplicationDbContext : MultiTenantDbContext
+    public class ApplicationDbContext : MultiTenantIdentityDbContext<ApplicationUser, IdentityRole, string>, IApplicationDbContext
     {
-        public ApplicationDbContext(ITenantInfo tenantInfo) : base(tenantInfo)
-        {
-        }
-
-        public ApplicationDbContext(ITenantInfo tenantInfo, DbContextOptions<ApplicationDbContext> options) : base(tenantInfo, options)
+        public ApplicationDbContext(ITenantInfo? tenantInfo, DbContextOptions<ApplicationDbContext> options) : base(tenantInfo ?? new TenantInfo(), options)
         {
         }
 
@@ -22,6 +22,8 @@ namespace Boksi.Infrastructure.Data
         public DbSet<Employee> Employees { get; set; } = null!;
         public DbSet<Client> Clients { get; set; } = null!;
         public DbSet<Appointment> Appointments { get; set; } = null!;
+        public DbSet<EmployeeSchedule> EmployeeSchedules { get; set; } = null!;
+        public DbSet<TimeOff> TimeOffs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +34,8 @@ namespace Boksi.Infrastructure.Data
             modelBuilder.Entity<Service>().IsMultiTenant();
             modelBuilder.Entity<Employee>().IsMultiTenant();
             modelBuilder.Entity<Appointment>().IsMultiTenant();
+            modelBuilder.Entity<EmployeeSchedule>().IsMultiTenant();
+            modelBuilder.Entity<TimeOff>().IsMultiTenant();
 
             // Additional configurations if needed
             modelBuilder.Entity<Service>()
