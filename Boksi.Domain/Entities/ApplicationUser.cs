@@ -9,5 +9,6 @@ namespace Boksi.Domain.Entities
         public bool IsActive { get; set; } = true;
         public DateTime? FirstLoginDate { get; set; }
         public DateTime? LastLoginDate { get; set; }
+        public decimal? CommissionPercentage { get; set; }
     }
 }

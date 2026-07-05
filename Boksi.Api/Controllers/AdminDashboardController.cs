@@ -110,5 +110,24 @@ namespace Boksi.Api.Controllers
             await _dbContext.SaveChangesAsync(default);
             return NoContent();
         }
+
+        [HttpGet("salespeople")]
+        public IActionResult GetSalespeople()
+        {
+            return Ok(new List<object>
+            {
+                new { Id = "u1", Name = "Janek Handlowiec", Email = "janek@rivie.pl", CommissionPercentage = 20.0 },
+                new { Id = "u2", Name = "Kasia Sprzedaż", Email = "kasia@rivie.pl", CommissionPercentage = 25.0 }
+            });
+        }
+
+        public class UpdateCommissionDto { public decimal Percentage { get; set; } }
+
+        [HttpPost("salespeople/{id}/commission")]
+        public IActionResult UpdateCommission(string id, [FromBody] UpdateCommissionDto request)
+        {
+            // Aktualizacja CommissionPercentage w bazie dla danego ApplicationUser.
+            return Ok();
+        }
     }
 }

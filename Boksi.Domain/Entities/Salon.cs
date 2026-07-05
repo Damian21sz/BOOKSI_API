@@ -18,6 +18,8 @@ namespace Boksi.Domain.Entities
         public string? Description { get; set; }
         public string? Address { get; set; }
         public string? PhoneNumber { get; set; }
+        
+        public string? SalespersonId { get; set; } // ApplicationUserId (Opiekun)
 
         public SubscriptionStatus SubscriptionStatus { get; set; } = SubscriptionStatus.Trial;
         public System.DateTime SubscriptionValidUntil { get; set; } = System.DateTime.UtcNow.AddDays(14);
