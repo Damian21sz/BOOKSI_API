@@ -37,14 +37,31 @@ namespace Boksi.Api.Controllers
                 return BadRequest("Missing X-Tenant-Id header.");
             }
 
-            var appointments = new List<object>
+            var employeesWithTasks = new List<object>
             {
-                new { Time = "12:00", Duration = "60 min", Service = "Strzyżenie Męskie", Client = "Jan Kowalski", Employee = "Anna", Status = "Potwierdzona" },
-                new { Time = "13:00", Duration = "30 min", Service = "Modelowanie", Client = "Katarzyna Nowak", Employee = "Piotr", Status = "Oczekująca" },
-                new { Time = "14:30", Duration = "45 min", Service = "Farbowanie", Client = "Anna Maria", Employee = "Anna", Status = "Potwierdzona" }
+                new 
+                { 
+                    EmployeeId = "emp1", 
+                    EmployeeName = "Anna", 
+                    Tasks = new List<object>
+                    {
+                        new { Id = "t1", Time = "08:00", Duration = 60, Title = "Porządki", Client = (string)null, IsCustom = true },
+                        new { Id = "t2", Time = "12:00", Duration = 60, Title = "Strzyżenie Męskie", Client = "Jan Kowalski", IsCustom = false }
+                    }
+                },
+                new 
+                { 
+                    EmployeeId = "emp2", 
+                    EmployeeName = "Piotr", 
+                    Tasks = new List<object>
+                    {
+                        new { Id = "t3", Time = "13:00", Duration = 30, Title = "Modelowanie", Client = "Katarzyna Nowak", IsCustom = false },
+                        new { Id = "t4", Time = "15:00", Duration = 120, Title = "Szkolenie BHP", Client = (string)null, IsCustom = true }
+                    }
+                }
             };
 
-            return Ok(appointments);
+            return Ok(employeesWithTasks);
         }
     }
 }

@@ -22,8 +22,11 @@ namespace Boksi.Domain.Entities
         public Guid ClientId { get; set; }
         public Client Client { get; set; } = null!;
 
-        public Guid ServiceId { get; set; }
-        public Service Service { get; set; } = null!;
+        public Guid? ServiceId { get; set; }
+        public Service? Service { get; set; }
+
+        public string? CustomTaskName { get; set; }
+        public string? CustomTaskDescription { get; set; }
 
         public Guid? GroupId { get; set; } // Used for group bookings
     }
