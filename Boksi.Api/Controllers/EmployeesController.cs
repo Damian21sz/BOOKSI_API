@@ -35,6 +35,25 @@ namespace Boksi.Api.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult GetEmployees()
+        {
+            // Zwracamy przykładową listę (mock)
+            return Ok(new[]
+            {
+                new { Id = "e1", FirstName = "Anna", LastName = "Nowak", Email = "anna@salon.pl", Status = "Active" },
+                new { Id = "e2", FirstName = "Piotr", LastName = "Kowal", Email = "piotr@salon.pl", Status = "Active" },
+                new { Id = "e3", FirstName = "Kasia", LastName = "Zwolniona", Email = "kasia@salon.pl", Status = "Inactive" }
+            });
+        }
+
+        [HttpPut("{id}/deactivate")]
+        public IActionResult DeactivateEmployee(System.Guid id)
+        {
+            // Oznacz pracownika jako nieaktywnego w DB
+            return Ok(new { Message = "Pracownik został pomyślnie dezaktywowany." });
+        }
+
         [HttpPut("{id}/settings")]
         public async Task<IActionResult> UpdateSettings(System.Guid id, [FromBody] UpdateEmployeeSettingsCommand command)
         {
