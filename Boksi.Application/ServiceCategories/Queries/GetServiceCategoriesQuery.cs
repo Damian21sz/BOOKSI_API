@@ -25,6 +25,7 @@ namespace Boksi.Application.ServiceCategories.Queries
         public async Task<List<ServiceCategoryDto>> Handle(GetServiceCategoriesQuery request, CancellationToken cancellationToken)
         {
             return await _context.ServiceCategories
+                .Where(c => !c.IsDeleted)
                 .Select(c => new ServiceCategoryDto
                 {
                     Id = c.Id,

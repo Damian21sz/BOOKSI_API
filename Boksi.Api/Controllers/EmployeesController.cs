@@ -36,22 +36,18 @@ namespace Boksi.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetEmployees()
+        public async Task<IActionResult> GetEmployees()
         {
-            // Zwracamy przykładową listę (mock)
-            return Ok(new[]
-            {
-                new { Id = "e1", FirstName = "Anna", LastName = "Nowak", Email = "anna@salon.pl", Status = "Active" },
-                new { Id = "e2", FirstName = "Piotr", LastName = "Kowal", Email = "piotr@salon.pl", Status = "Active" },
-                new { Id = "e3", FirstName = "Kasia", LastName = "Zwolniona", Email = "kasia@salon.pl", Status = "Inactive" }
-            });
+            var employees = await _mediator.Send(new Boksi.Application.Employees.Queries.GetEmployeesQuery());
+            return Ok(employees);
         }
 
         [HttpPut("{id}/deactivate")]
-        public IActionResult DeactivateEmployee(System.Guid id)
+        public async Task<IActionResult> DeactivateEmployee(System.Guid id)
         {
-            // Oznacz pracownika jako nieaktywnego w DB
-            return Ok(new { Message = "Pracownik został pomyślnie dezaktywowany." });
+            var result = await _mediator.Send(new Boksi.Application.Employees.Commands.DeactivateEmployeeCommand { EmployeeId = id });
+            if (!result) return NotFound("Pracownik nie został znaleziony.");
+            return Ok(new { Message = "Status pracownika został pomyślnie zmieniony." });
         }
 
         [HttpPut("{id}/settings")]

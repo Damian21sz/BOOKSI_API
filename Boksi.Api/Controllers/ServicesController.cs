@@ -35,5 +35,22 @@ namespace Boksi.Api.Controllers
             var serviceId = await _mediator.Send(command);
             return Ok(serviceId);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateService(Guid id, [FromBody] UpdateServiceCommand command)
+        {
+            if (id != command.Id) return BadRequest("ID mismatch");
+            var result = await _mediator.Send(command);
+            if (!result) return NotFound();
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteService(Guid id)
+        {
+            var result = await _mediator.Send(new Boksi.Application.Services.Commands.DeleteServiceCommand { Id = id });
+            if (!result) return NotFound();
+            return Ok();
+        }
     }
 }

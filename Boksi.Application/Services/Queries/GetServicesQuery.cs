@@ -26,6 +26,7 @@ namespace Boksi.Application.Services.Queries
         {
             return await _context.Services
                 .Include(s => s.Category)
+                .Where(s => !s.IsDeleted)
                 .Select(s => new ServiceDto
                 {
                     Id = s.Id,
