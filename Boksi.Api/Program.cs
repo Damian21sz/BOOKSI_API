@@ -3,6 +3,8 @@ using Finbuckle.MultiTenant;
 using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure Rate Limiting based on IP address
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100, // Max requests
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1) // Per minute
+            }));
+            
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // Register application services
 builder.Services.AddScoped<Boksi.Application.Interfaces.IEmailService, Boksi.Infrastructure.Services.DummyEmailService>();
@@ -69,6 +88,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
+
+// Apply Rate Limiting
+app.UseRateLimiter();
 
 // Finbuckle middleware must be before routing/auth
 app.UseMultiTenant();
