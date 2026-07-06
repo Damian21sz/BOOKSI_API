@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
 
 // Configure Rate Limiting based on IP address
 builder.Services.AddRateLimiter(options =>
@@ -115,5 +116,6 @@ app.UseMiddleware<Boksi.Api.Middlewares.SubscriptionRequirementMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<Boksi.Api.Hubs.ChatHub>("/chathub");
 
 app.Run();
