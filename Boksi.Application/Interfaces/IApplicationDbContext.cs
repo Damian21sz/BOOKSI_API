@@ -33,6 +33,9 @@ namespace Boksi.Application.Interfaces
         DbSet<ClientLoyaltyCard> ClientLoyaltyCards { get; }
         DbSet<MarketingCampaign> MarketingCampaigns { get; }
 
+        DbSet<Changelog> Changelogs { get; }
+        DbSet<ChangelogReadReceipt> ChangelogReadReceipts { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

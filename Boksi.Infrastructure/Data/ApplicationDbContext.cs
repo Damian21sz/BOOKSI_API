@@ -42,6 +42,9 @@ namespace Boksi.Infrastructure.Data
         public DbSet<ClientLoyaltyCard> ClientLoyaltyCards { get; set; } = null!;
         public DbSet<MarketingCampaign> MarketingCampaigns { get; set; } = null!;
 
+        public DbSet<Changelog> Changelogs { get; set; } = null!;
+        public DbSet<ChangelogReadReceipt> ChangelogReadReceipts { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
