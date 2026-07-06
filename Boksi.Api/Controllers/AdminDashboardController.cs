@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Boksi.Api.Controllers
 {
@@ -156,7 +157,11 @@ namespace Boksi.Api.Controllers
                 Id = u.Id,
                 Name = $"{u.FirstName} {u.LastName}",
                 Email = u.Email,
-                CommissionPercentage = u.CommissionPercentage ?? 0m
+                CommissionPercentage = u.CommissionPercentage ?? 0m,
+                City = u.City,
+                Latitude = u.Latitude,
+                Longitude = u.Longitude,
+                CoverageRadiusKm = u.CoverageRadiusKm
             });
             return Ok(salespeople);
         }
@@ -167,6 +172,10 @@ namespace Boksi.Api.Controllers
             public string LastName { get; set; } = null!;
             public string Email { get; set; } = null!;
             public decimal CommissionPercentage { get; set; }
+            public string? City { get; set; }
+            public double? Latitude { get; set; }
+            public double? Longitude { get; set; }
+            public double? CoverageRadiusKm { get; set; }
         }
 
         [HttpPost("salespeople")]
@@ -189,7 +198,11 @@ namespace Boksi.Api.Controllers
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 CommissionPercentage = request.CommissionPercentage,
-                MustChangePassword = true
+                MustChangePassword = true,
+                City = request.City,
+                Latitude = request.Latitude,
+                Longitude = request.Longitude,
+                CoverageRadiusKm = request.CoverageRadiusKm
             };
 
             // Generate a random password
