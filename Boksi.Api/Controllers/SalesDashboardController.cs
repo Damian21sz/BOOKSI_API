@@ -1,36 +1,90 @@
+using Boksi.Application.Interfaces;
+using Boksi.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Boksi.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Salesperson")]
     public class SalesDashboardController : ControllerBase
     {
-        [HttpGet("summary")]
-        public IActionResult GetSummary()
+        private readonly IApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public SalesDashboardController(IApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
         {
-            // Zwracamy przykładowe statystyki dla Handlowca.
-            // Docelowo: Pobieramy UserId z tokena, szukamy w bazie Salonów gdzie SalespersonId == UserId.
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        private string GetUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        }
+
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary()
+        {
+            var userId = GetUserId();
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return Unauthorized();
+
+            var commissionPercentage = user.CommissionPercentage ?? 0m;
+
+            var salons = await _dbContext.Salons
+                .Where(s => s.SalespersonId == userId)
+                .ToListAsync();
+
+            var activeCount = salons.Count(s => s.SubscriptionStatus == SubscriptionStatus.Active);
+            var trialCount = salons.Count(s => s.SubscriptionStatus == SubscriptionStatus.Trial);
+            
+            // Estymowany przychód = suma (cena bazowa * procent prowizji) tylko dla aktywnych
+            var estimatedRevenue = salons
+                .Where(s => s.SubscriptionStatus == SubscriptionStatus.Active)
+                .Sum(s => s.BaseSubscriptionPrice * (commissionPercentage / 100m));
+
             return Ok(new
             {
-                EstimatedRevenue = 450.00,
-                CommissionPercentage = 20.0,
-                DemoCompaniesCount = 3,
-                ActiveCompaniesCount = 2
+                EstimatedRevenue = estimatedRevenue,
+                CommissionPercentage = commissionPercentage,
+                DemoCompaniesCount = trialCount,
+                ActiveCompaniesCount = activeCount,
+                TotalCompanies = salons.Count
             });
         }
 
         [HttpGet("companies")]
-        public IActionResult GetCompanies()
+        public async Task<IActionResult> GetCompanies()
         {
-            return Ok(new List<object>
-            {
-                new { Id = "c1", Name = "Salon Urody Bellissima", Status = "Active", MonthlyPrice = 100.00, Commission = 20.00 },
-                new { Id = "c2", Name = "Barber Shop Classic", Status = "Active", MonthlyPrice = 150.00, Commission = 30.00 },
-                new { Id = "c3", Name = "Studio Paznokci Glow", Status = "Trial", MonthlyPrice = 100.00, Commission = 0.00 },
-                new { Id = "c4", Name = "Fryzjer Męski 'Ostre Cięcie'", Status = "Trial", MonthlyPrice = 100.00, Commission = 0.00 }
-            });
+            var userId = GetUserId();
+            var user = await _userManager.FindByIdAsync(userId);
+            var commissionPercentage = user?.CommissionPercentage ?? 0m;
+
+            var salons = await _dbContext.Salons
+                .Where(s => s.SalespersonId == userId)
+                .Select(s => new
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Identifier = s.Identifier,
+                    Status = s.SubscriptionStatus.ToString(),
+                    MonthlyPrice = s.BaseSubscriptionPrice,
+                    Commission = s.SubscriptionStatus == SubscriptionStatus.Active 
+                        ? s.BaseSubscriptionPrice * (commissionPercentage / 100m) 
+                        : 0m,
+                    PhoneNumber = s.PhoneNumber,
+                    SubscriptionValidUntil = s.SubscriptionValidUntil
+                })
+                .ToListAsync();
+
+            return Ok(salons);
         }
     }
 }

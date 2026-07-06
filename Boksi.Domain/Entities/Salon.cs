@@ -25,6 +25,9 @@ namespace Boksi.Domain.Entities
         public System.DateTime SubscriptionValidUntil { get; set; } = System.DateTime.UtcNow.AddDays(14);
         public decimal BaseSubscriptionPrice { get; set; } = 100.00m; // Default price, could be overridden by plan/admin
 
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
         public System.Guid? BusinessCategoryId { get; set; }
         public BusinessCategory? Category { get; set; }
     }

@@ -10,5 +10,6 @@ namespace Boksi.Domain.Entities
         public DateTime? FirstLoginDate { get; set; }
         public DateTime? LastLoginDate { get; set; }
         public decimal? CommissionPercentage { get; set; }
+        public bool MustChangePassword { get; set; } = false;
     }
 }

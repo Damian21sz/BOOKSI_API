@@ -47,11 +47,21 @@ namespace Boksi.Api.Controllers
                     s.Identifier,
                     s.SubscriptionStatus,
                     s.SubscriptionValidUntil,
-                    s.BaseSubscriptionPrice
+                    s.BaseSubscriptionPrice,
+                    PhoneNumber = s.PhoneNumber ?? "Brak",
+                    Email = s.Identifier + "@example.com",
+                    s.SalespersonId
                 })
                 .ToListAsync();
 
             return Ok(salons);
+        }
+
+        [HttpGet("discounts")]
+        public async Task<IActionResult> GetDiscountCodes()
+        {
+            var codes = await _dbContext.DiscountCodes.ToListAsync();
+            return Ok(codes);
         }
 
         [HttpPost("discounts")]
@@ -60,6 +70,32 @@ namespace Boksi.Api.Controllers
             _dbContext.DiscountCodes.Add(code);
             await _dbContext.SaveChangesAsync(default);
             return Ok(code);
+        }
+
+        [HttpGet("plans")]
+        public async Task<IActionResult> GetSubscriptionPlans()
+        {
+            var plans = await _dbContext.SubscriptionPlans.ToListAsync();
+            if (!plans.Any())
+            {
+                var defaultPlan = new SubscriptionPlan { Name = "Standard", Description = "Domyślny plan", PricePerMonth = 100.00m };
+                _dbContext.SubscriptionPlans.Add(defaultPlan);
+                await _dbContext.SaveChangesAsync(default);
+                plans.Add(defaultPlan);
+            }
+            return Ok(plans);
+        }
+
+        [HttpPut("plans/{id}")]
+        public async Task<IActionResult> UpdateSubscriptionPlan(Guid id, [FromBody] SubscriptionPlan planUpdate)
+        {
+            var plan = await _dbContext.SubscriptionPlans.FindAsync(id);
+            if (plan == null) return NotFound();
+            plan.PricePerMonth = planUpdate.PricePerMonth;
+            plan.Name = planUpdate.Name;
+            plan.Description = planUpdate.Description;
+            await _dbContext.SaveChangesAsync(default);
+            return Ok(plan);
         }
 
         [HttpPut("salons/{id}/price")]
@@ -112,21 +148,83 @@ namespace Boksi.Api.Controllers
         }
 
         [HttpGet("salespeople")]
-        public IActionResult GetSalespeople()
+        public async Task<IActionResult> GetSalespeople([FromServices] UserManager<ApplicationUser> userManager)
         {
-            return Ok(new List<object>
+            var usersInRole = await userManager.GetUsersInRoleAsync("Salesperson");
+            var salespeople = usersInRole.Select(u => new
             {
-                new { Id = "u1", Name = "Janek Handlowiec", Email = "janek@rivie.pl", CommissionPercentage = 20.0 },
-                new { Id = "u2", Name = "Kasia Sprzedaż", Email = "kasia@rivie.pl", CommissionPercentage = 25.0 }
+                Id = u.Id,
+                Name = $"{u.FirstName} {u.LastName}",
+                Email = u.Email,
+                CommissionPercentage = u.CommissionPercentage ?? 0m
+            });
+            return Ok(salespeople);
+        }
+
+        public class CreateSalespersonDto
+        {
+            public string FirstName { get; set; } = null!;
+            public string LastName { get; set; } = null!;
+            public string Email { get; set; } = null!;
+            public decimal CommissionPercentage { get; set; }
+        }
+
+        [HttpPost("salespeople")]
+        public async Task<IActionResult> CreateSalesperson(
+            [FromBody] CreateSalespersonDto request,
+            [FromServices] UserManager<ApplicationUser> userManager,
+            [FromServices] RoleManager<IdentityRole> roleManager,
+            [FromServices] IEmailService emailService)
+        {
+            // Ensure role exists
+            if (!await roleManager.RoleExistsAsync("Salesperson"))
+            {
+                await roleManager.CreateAsync(new IdentityRole("Salesperson"));
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                CommissionPercentage = request.CommissionPercentage,
+                MustChangePassword = true
+            };
+
+            // Generate a random password
+            var temporaryPassword = "P@ssw0rd!" + Guid.NewGuid().ToString().Substring(0, 4);
+
+            var result = await userManager.CreateAsync(user, temporaryPassword);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            await userManager.AddToRoleAsync(user, "Salesperson");
+
+            // Send email
+            var emailBody = $"Zostałeś zarejestrowany jako Handlowiec.\nTwoje tymczasowe hasło to: {temporaryPassword}\nZmień hasło przy pierwszym logowaniu.";
+            await emailService.SendEmailAsync(user.Email, "Rejestracja - RIVIE HQ", emailBody);
+
+            return Ok(new { 
+                Id = user.Id, 
+                Name = $"{user.FirstName} {user.LastName}", 
+                Email = user.Email, 
+                CommissionPercentage = user.CommissionPercentage 
             });
         }
 
         public class UpdateCommissionDto { public decimal Percentage { get; set; } }
 
         [HttpPost("salespeople/{id}/commission")]
-        public IActionResult UpdateCommission(string id, [FromBody] UpdateCommissionDto request)
+        public async Task<IActionResult> UpdateCommission(string id, [FromBody] UpdateCommissionDto request, [FromServices] UserManager<ApplicationUser> userManager)
         {
-            // Aktualizacja CommissionPercentage w bazie dla danego ApplicationUser.
+            var user = await userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            user.CommissionPercentage = request.Percentage;
+            await userManager.UpdateAsync(user);
             return Ok();
         }
     }
