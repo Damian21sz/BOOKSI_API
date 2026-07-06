@@ -22,6 +22,8 @@ namespace Boksi.Infrastructure.Data
         public DbSet<Service> Services { get; set; } = null!;
         public DbSet<Employee> Employees { get; set; } = null!;
         public DbSet<Client> Clients { get; set; } = null!;
+        public DbSet<ClientNote> ClientNotes { get; set; } = null!;
+        public DbSet<ClientConsent> ClientConsents { get; set; } = null!;
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<EmployeeSchedule> EmployeeSchedules { get; set; } = null!;
         public DbSet<TimeOff> TimeOffs { get; set; } = null!;
@@ -58,6 +60,8 @@ namespace Boksi.Infrastructure.Data
             modelBuilder.Entity<LoyaltyProgramSettings>().IsMultiTenant();
             modelBuilder.Entity<ClientLoyaltyCard>().IsMultiTenant();
             modelBuilder.Entity<MarketingCampaign>().IsMultiTenant();
+            modelBuilder.Entity<ClientNote>().IsMultiTenant();
+            modelBuilder.Entity<ClientConsent>().IsMultiTenant();
 
             // Additional configurations if needed
             modelBuilder.Entity<Service>()

@@ -75,16 +75,16 @@ namespace Boksi.Api.Controllers
                     var appointments = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
                         System.Linq.Queryable.OrderBy(
                             System.Linq.Queryable.Where(_dbContext.Appointments, 
-                                a => a.EmployeeId == emp.Id && a.DateTime.Date == today),
-                            a => a.DateTime)
+                                a => a.EmployeeId == emp.Id && a.StartTime.Date == today && !a.IsDeleted),
+                            a => a.StartTime)
                     );
 
                     foreach(var app in appointments)
                     {
                         tasks.Add(new {
                             Id = app.Id.ToString(),
-                            Time = app.DateTime.ToString("HH:mm"),
-                            Duration = 60, // We would use service duration here in real app
+                            Time = app.StartTime.ToString("HH:mm"),
+                            Duration = (int)(app.EndTime - app.StartTime).TotalMinutes,
                             Title = "Wizyta",
                             Client = "Klient Zarejestrowany", // We would include Client name
                             IsCustom = false

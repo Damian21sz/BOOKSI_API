@@ -9,6 +9,8 @@ namespace Boksi.Application.Interfaces
     {
         DbSet<Employee> Employees { get; }
         DbSet<Client> Clients { get; }
+        DbSet<ClientNote> ClientNotes { get; }
+        DbSet<ClientConsent> ClientConsents { get; }
         DbSet<Appointment> Appointments { get; }
         DbSet<EmployeeSchedule> EmployeeSchedules { get; }
         DbSet<TimeOff> TimeOffs { get; }
