@@ -2,7 +2,7 @@ using System;
 
 namespace Boksi.Domain.Entities
 {
-    public class GalleryImage : TenantEntity
+    public class GalleryImage : SalonEntity
     {
         public Guid EmployeeId { get; set; }
         public Employee Employee { get; set; } = null!;

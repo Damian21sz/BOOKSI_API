@@ -2,7 +2,7 @@ using System;
 
 namespace Boksi.Domain.Entities
 {
-    public class WaitlistEntry : TenantEntity
+    public class WaitlistEntry : SalonEntity
     {
         public DateTime Date { get; set; }
         public TimeSpan TimeStart { get; set; }
@@ -15,6 +15,5 @@ namespace Boksi.Domain.Entities
         public Service Service { get; set; } = null!;
         
         public bool IsNotified { get; set; } = false;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

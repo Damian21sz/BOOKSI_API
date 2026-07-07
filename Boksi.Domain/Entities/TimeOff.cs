@@ -9,7 +9,7 @@ namespace Boksi.Domain.Entities
         Rejected
     }
 
-    public class TimeOff : TenantEntity
+    public class TimeOff : SalonEntity
     {
         public Guid EmployeeId { get; set; }
         public Employee Employee { get; set; } = null!;

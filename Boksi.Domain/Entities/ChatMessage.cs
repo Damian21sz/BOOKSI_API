@@ -2,7 +2,7 @@ using System;
 
 namespace Boksi.Domain.Entities
 {
-    public class ChatMessage : TenantEntity
+    public class ChatMessage : SalonEntity
     {
         public Guid ClientId { get; set; }
         public Client Client { get; set; } = null!;

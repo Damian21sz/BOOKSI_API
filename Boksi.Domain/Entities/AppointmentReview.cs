@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Boksi.Domain.Entities
 {
-    public class AppointmentReview : TenantEntity
+    public class AppointmentReview : SalonEntity
     {
         public Guid AppointmentId { get; set; }
         public Appointment Appointment { get; set; } = null!;

@@ -10,7 +10,7 @@ namespace Boksi.Domain.Entities
         Completed
     }
 
-    public class Appointment : TenantEntity
+    public class Appointment : SalonEntity
     {
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }

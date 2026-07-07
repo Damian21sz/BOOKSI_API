@@ -22,7 +22,7 @@ namespace Boksi.Domain.Entities
         Sent
     }
 
-    public class MarketingCampaign : TenantEntity
+    public class MarketingCampaign : SalonEntity
     {
         public string Name { get; set; } = null!;
         

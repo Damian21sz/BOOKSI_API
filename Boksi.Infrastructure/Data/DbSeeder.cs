@@ -4,24 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-using Finbuckle.MultiTenant;
-using Finbuckle.MultiTenant.Abstractions;
-
 namespace Boksi.Infrastructure.Data
 {
     public static class DbSeeder
     {
         public static async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
         {
-            var tenantSetter = serviceProvider.GetService<IMultiTenantContextSetter>();
-            if (tenantSetter != null)
-            {
-                tenantSetter.MultiTenantContext = new MultiTenantContext<TenantInfo>
-                {
-                    TenantInfo = new TenantInfo { Id = "default", Identifier = "default" }
-                };
-            }
-
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 

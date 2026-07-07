@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Boksi.Domain.Entities
 {
-    public class Employee : TenantEntity
+    public class Employee : SalonEntity
     {
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;

@@ -10,8 +10,8 @@ namespace Boksi.Domain.Entities
         public bool IsDeleted { get; set; } = false;
     }
 
-    public abstract class TenantEntity : BaseEntity
+    public abstract class SalonEntity : BaseEntity
     {
-        public string TenantId { get; set; } = null!;
+        public string SalonId { get; set; } = null!;
     }
 }

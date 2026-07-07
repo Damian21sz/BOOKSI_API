@@ -17,13 +17,13 @@ namespace Boksi.Api.Controllers
         [HttpGet("stats")]
         public async System.Threading.Tasks.Task<IActionResult> GetStats()
         {
-            // The X-Tenant-Id header determines which salon data we return.
+            // The X-Salon-Id header determines which salon data we return.
             // For now, we mock the data.
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
 
             if (string.IsNullOrEmpty(tenantId))
             {
-                return BadRequest("Missing X-Tenant-Id header.");
+                return BadRequest("Missing X-Salon-Id header.");
             }
 
             return Ok(new
@@ -37,8 +37,8 @@ namespace Boksi.Api.Controllers
         [HttpGet("appointments")]
         public async System.Threading.Tasks.Task<IActionResult> GetAppointments()
         {
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
-            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Tenant-Id header.");
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
+            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Salon-Id header.");
 
             var today = System.DateTime.UtcNow.Date;
 
@@ -65,7 +65,7 @@ namespace Boksi.Api.Controllers
                         Time = "00:00",
                         Duration = 1440, // Whole day
                         Title = timeOff.Reason ?? "Urlop / Nieobecność",
-                        Client = (string)null,
+                        Client = null as string,
                         IsCustom = true
                     });
                 }

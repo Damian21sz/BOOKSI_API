@@ -16,5 +16,7 @@ namespace Boksi.Domain.Entities
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public double? CoverageRadiusKm { get; set; }
+        
+        public string? SalonId { get; set; }
     }
 }

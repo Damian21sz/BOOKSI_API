@@ -37,6 +37,10 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<Boksi.Application.Interfaces.IEmailService, Boksi.Infrastructure.Services.DummyEmailService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Boksi.Application.Interfaces.IEmailService).Assembly));
 
+// Add custom services
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<Boksi.Application.Interfaces.ICurrentUserService, Boksi.Infrastructure.Services.CurrentUserService>();
+
 // Configure CORS for the frontend
 builder.Services.AddCors(options =>
 {
@@ -48,11 +52,6 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod();
         });
 });
-
-// Configure Finbuckle MultiTenant
-builder.Services.AddMultiTenant<TenantInfo>()
-    .WithHeaderStrategy("X-Tenant-Id")
-    .WithConfigurationStore();
 
 // Configure Entity Framework Core with PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -135,9 +134,22 @@ app.UseHttpsRedirection();
 // Apply Rate Limiting
 app.UseRateLimiter();
 
-// Finbuckle middleware must be before routing/auth
-app.UseMultiTenant();
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
 
+        var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        await context.Response.WriteAsJsonAsync(new { 
+            error = "Wystąpił nieoczekiwany błąd serwera.", 
+            details = exception?.Message 
+        });
+    });
+});
 app.UseMiddleware<Boksi.Api.Middlewares.SubscriptionRequirementMiddleware>();
 
 app.UseAuthentication();

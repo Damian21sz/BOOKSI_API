@@ -2,7 +2,7 @@ using System;
 
 namespace Boksi.Domain.Entities
 {
-    public class LoyaltyProgramSettings : TenantEntity
+    public class LoyaltyProgramSettings : SalonEntity
     {
         public bool IsActive { get; set; } = false;
         

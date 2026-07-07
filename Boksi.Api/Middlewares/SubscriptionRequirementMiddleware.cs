@@ -1,5 +1,3 @@
-using Finbuckle.MultiTenant;
-using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,6 +5,7 @@ using System.Threading.Tasks;
 using Boksi.Infrastructure.Data; // Warning: using DbContext directly in Middleware for performance/simplicity
 using Microsoft.Extensions.DependencyInjection;
 using Boksi.Domain.Entities;
+using Boksi.Application.Interfaces;
 
 namespace Boksi.Api.Middlewares
 {
@@ -36,14 +35,16 @@ namespace Boksi.Api.Middlewares
                 return;
             }
 
-            var tenantInfo = context.GetMultiTenantContext<TenantInfo>()?.TenantInfo;
-            if (tenantInfo != null && !string.IsNullOrEmpty(tenantInfo.Identifier))
+            using var scope = context.RequestServices.CreateScope();
+            var currentUserService = scope.ServiceProvider.GetRequiredService<ICurrentUserService>();
+            var salonId = currentUserService.SalonId;
+
+            if (!string.IsNullOrEmpty(salonId))
             {
                 // We have a tenant context, meaning someone is accessing a salon's data
-                using var scope = context.RequestServices.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                var salon = await dbContext.Salons.FirstOrDefaultAsync(s => s.Identifier == tenantInfo.Identifier);
+                var salon = await dbContext.Salons.FirstOrDefaultAsync(s => s.Id.ToString() == salonId || s.Identifier == salonId);
                 if (salon != null)
                 {
                     if (salon.SubscriptionValidUntil < DateTime.UtcNow)

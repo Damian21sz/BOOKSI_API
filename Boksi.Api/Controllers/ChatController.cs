@@ -26,7 +26,7 @@ namespace Boksi.Api.Controllers
         public async Task<IActionResult> GetChatHistory(string salonId, Guid clientId)
         {
             var messages = await _dbContext.ChatMessages
-                .Where(m => m.TenantId == salonId && m.ClientId == clientId)
+                .Where(m => m.SalonId == salonId && m.ClientId == clientId)
                 .OrderBy(m => m.CreatedAt)
                 .ToListAsync();
 
@@ -38,7 +38,7 @@ namespace Boksi.Api.Controllers
         {
             // Gets the latest message for each client conversation in the salon
             var chats = await _dbContext.ChatMessages
-                .Where(m => m.TenantId == salonId)
+                .Where(m => m.SalonId == salonId)
                 .GroupBy(m => m.ClientId)
                 .Select(g => g.OrderByDescending(m => m.CreatedAt).FirstOrDefault())
                 .ToListAsync();
@@ -66,11 +66,11 @@ namespace Boksi.Api.Controllers
 
             // Broadcast via SignalR
             // We notify the specific conversation group
-            await _hubContext.Clients.Group($"Conversation_{message.TenantId}_{message.ClientId}")
+            await _hubContext.Clients.Group($"Conversation_{message.SalonId}_{message.ClientId}")
                 .SendAsync("ReceiveMessage", message);
                 
             // And we notify the Salon group (for the general messages list)
-            await _hubContext.Clients.Group($"Salon_{message.TenantId}")
+            await _hubContext.Clients.Group($"Salon_{message.SalonId}")
                 .SendAsync("NewMessageNotification", message);
 
             return Ok(message);

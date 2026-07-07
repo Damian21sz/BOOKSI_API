@@ -22,8 +22,8 @@ namespace Boksi.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetClients()
         {
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
-            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Tenant-Id header.");
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
+            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Salon-Id header.");
 
             // For MVP, fetch all clients that have at least one appointment in this tenant.
             var clients = await _dbContext.Appointments
@@ -49,7 +49,7 @@ namespace Boksi.Api.Controllers
         [HttpGet("{id}/history")]
         public async Task<IActionResult> GetClientHistory(Guid id)
         {
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
             if (string.IsNullOrEmpty(tenantId)) return BadRequest();
 
             var appointments = await _dbContext.Appointments
@@ -60,8 +60,8 @@ namespace Boksi.Api.Controllers
                 .Select(a => new {
                     a.Id,
                     Date = a.StartTime.ToString("yyyy-MM-dd HH:mm"),
-                    Service = a.Service.Name,
-                    Employee = a.Employee.FirstName + " " + a.Employee.LastName,
+                    Service = a.Service != null ? a.Service.Name : null,
+                    Employee = a.Employee != null ? a.Employee.FirstName + " " + a.Employee.LastName : "",
                     Status = a.Status.ToString(),
                     Price = a.Service != null ? a.Service.Price.ToString() + " PLN" : "0 PLN"
                 })
@@ -73,7 +73,7 @@ namespace Boksi.Api.Controllers
         [HttpGet("{id}/notes")]
         public async Task<IActionResult> GetClientNotes(Guid id)
         {
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
             if (string.IsNullOrEmpty(tenantId)) return BadRequest();
 
             var notes = await _dbContext.ClientNotes
@@ -87,11 +87,11 @@ namespace Boksi.Api.Controllers
         [HttpPost("{id}/notes")]
         public async Task<IActionResult> AddClientNote(Guid id, [FromBody] ClientNote request)
         {
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
             if (string.IsNullOrEmpty(tenantId)) return BadRequest();
 
             request.ClientId = id;
-            request.TenantId = tenantId;
+            request.SalonId = tenantId;
             request.CreatedAt = DateTime.UtcNow;
 
             _dbContext.ClientNotes.Add(request);
@@ -103,7 +103,7 @@ namespace Boksi.Api.Controllers
         [HttpGet("{id}/consents")]
         public async Task<IActionResult> GetClientConsents(Guid id)
         {
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
             if (string.IsNullOrEmpty(tenantId)) return BadRequest();
 
             var consents = await _dbContext.ClientConsents
@@ -117,11 +117,11 @@ namespace Boksi.Api.Controllers
         [HttpPost("{id}/consents")]
         public async Task<IActionResult> UpdateClientConsent(Guid id, [FromBody] ClientConsent request)
         {
-            var tenantId = HttpContext.Request.Headers["X-Tenant-Id"].ToString();
+            var tenantId = HttpContext.Request.Headers["X-Salon-Id"].ToString();
             if (string.IsNullOrEmpty(tenantId)) return BadRequest();
 
             request.ClientId = id;
-            request.TenantId = tenantId;
+            request.SalonId = tenantId;
             request.GrantedAt = DateTime.UtcNow;
 
             // Optional logic: if consent of this type exists, update it or add new history log.

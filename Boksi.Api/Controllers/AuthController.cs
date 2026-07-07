@@ -1,3 +1,4 @@
+
 using Boksi.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -223,7 +224,7 @@ namespace Boksi.Api.Controllers
             
             // Encode token for URL
             var encodedToken = Uri.EscapeDataString(token);
-            var resetLink = $"http://localhost:5173/auth/reset-password?token={encodedToken}&email={Uri.EscapeDataString(user.Email)}";
+            var resetLink = $"http://localhost:5173/auth/reset-password?token={encodedToken}&email={Uri.EscapeDataString(user.Email ?? "")}";
             
             await _emailService.SendEmailAsync(user.Email, "Resetowanie hasła w RIVIE", 
                 $"Aby zresetować hasło, kliknij w poniższy link:\n\n{resetLink}");
@@ -286,9 +287,15 @@ namespace Boksi.Api.Controllers
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+
+            if (!string.IsNullOrEmpty(user.SalonId))
+            {
+                claims.Add(new Claim("SalonId", user.SalonId));
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
             foreach (var role in roles)

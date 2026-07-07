@@ -2,7 +2,7 @@ using System;
 
 namespace Boksi.Domain.Entities
 {
-    public class Service : TenantEntity
+    public class Service : SalonEntity
     {
         public string Name { get; set; } = null!;
         public string? Description { get; set; }

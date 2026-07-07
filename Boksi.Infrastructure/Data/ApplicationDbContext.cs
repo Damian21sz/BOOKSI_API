@@ -1,7 +1,4 @@
 using Boksi.Domain.Entities;
-using Finbuckle.MultiTenant;
-using Finbuckle.MultiTenant.Abstractions;
-using Finbuckle.MultiTenant.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -10,10 +7,13 @@ using Boksi.Application.Interfaces;
 
 namespace Boksi.Infrastructure.Data
 {
-    public class ApplicationDbContext : MultiTenantIdentityDbContext<ApplicationUser, IdentityRole, string>, IApplicationDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole, string>, IApplicationDbContext
     {
-        public ApplicationDbContext(ITenantInfo? tenantInfo, DbContextOptions<ApplicationDbContext> options) : base(tenantInfo ?? new TenantInfo(), options)
+        private readonly ICurrentUserService _currentUserService;
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUserService currentUserService) : base(options)
         {
+            _currentUserService = currentUserService;
         }
 
         public DbSet<Salon> Salons { get; set; } = null!;
@@ -49,22 +49,22 @@ namespace Boksi.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Tenant Entities
-            modelBuilder.Entity<ServiceCategory>().IsMultiTenant();
-            modelBuilder.Entity<Service>().IsMultiTenant();
-            modelBuilder.Entity<Employee>().IsMultiTenant();
-            modelBuilder.Entity<Appointment>().IsMultiTenant();
-            modelBuilder.Entity<EmployeeSchedule>().IsMultiTenant();
-            modelBuilder.Entity<TimeOff>().IsMultiTenant();
-            modelBuilder.Entity<WaitlistEntry>().IsMultiTenant();
-            modelBuilder.Entity<GalleryImage>().IsMultiTenant();
-            modelBuilder.Entity<AppointmentReview>().IsMultiTenant();
-            modelBuilder.Entity<ChatMessage>().IsMultiTenant();
-            modelBuilder.Entity<LoyaltyProgramSettings>().IsMultiTenant();
-            modelBuilder.Entity<ClientLoyaltyCard>().IsMultiTenant();
-            modelBuilder.Entity<MarketingCampaign>().IsMultiTenant();
-            modelBuilder.Entity<ClientNote>().IsMultiTenant();
-            modelBuilder.Entity<ClientConsent>().IsMultiTenant();
+            // Configure Salon Entities with Global Query Filters
+            modelBuilder.Entity<ServiceCategory>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<Service>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<Employee>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<Appointment>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<EmployeeSchedule>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<TimeOff>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<WaitlistEntry>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<GalleryImage>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<AppointmentReview>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<ChatMessage>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<LoyaltyProgramSettings>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<ClientLoyaltyCard>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<MarketingCampaign>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<ClientNote>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
+            modelBuilder.Entity<ClientConsent>().HasQueryFilter(e => _currentUserService.SalonId == null || e.SalonId == _currentUserService.SalonId);
 
             // Additional configurations if needed
             modelBuilder.Entity<Service>()
