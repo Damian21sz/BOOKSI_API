@@ -42,7 +42,12 @@ namespace Boksi.Api.Controllers
             if (user == null) return Unauthorized(new { message = "Nieprawidłowy e-mail lub hasło" });
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-            if (!result.Succeeded) return Unauthorized(new { message = "Nieprawidłowy e-mail lub hasło" });
+            
+            if (result.IsNotAllowed) 
+                return Unauthorized(new { message = "Konto nie zostało jeszcze aktywowane. Sprawdź swoją skrzynkę e-mail." });
+            
+            if (!result.Succeeded) 
+                return Unauthorized(new { message = "Nieprawidłowy e-mail lub hasło." });
 
             if (user.MustChangePassword)
             {
@@ -83,7 +88,7 @@ namespace Boksi.Api.Controllers
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                EmailConfirmed = true 
+                EmailConfirmed = request.AccountType != "User" 
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
@@ -95,7 +100,108 @@ namespace Boksi.Api.Controllers
 
             await _userManager.AddToRoleAsync(user, request.AccountType);
 
+            if (request.AccountType == "User")
+            {
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var encodedToken = Uri.EscapeDataString(token);
+                var verifyLink = $"http://localhost:5173/auth/verify-email?token={encodedToken}&email={Uri.EscapeDataString(user.Email)}";
+                
+                await _emailService.SendEmailAsync(user.Email, "Potwierdź swój e-mail w RIVIE", 
+                    $"Dziękujemy za rejestrację! Aby aktywować konto, kliknij w poniższy link:\n\n{verifyLink}");
+
+                return Ok(new { message = "Konto zostało utworzone. Na Twój adres e-mail wysłaliśmy link aktywacyjny." });
+            }
+
             return Ok(new { message = "Konto zostało poprawnie utworzone." });
+        }
+
+        public class VerifyEmailRequest
+        {
+            public string Email { get; set; } = null!;
+            public string Token { get; set; } = null!;
+        }
+
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null) return BadRequest(new { message = "Nieprawidłowe żądanie." });
+
+            var result = await _userManager.ConfirmEmailAsync(user, request.Token);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { message = "Nie udało się potwierdzić adresu e-mail. Link mógł wygasnąć." });
+            }
+
+            return Ok(new { message = "Adres e-mail został pomyślnie zweryfikowany. Możesz się teraz zalogować." });
+        }
+
+        [HttpGet("external-login/{provider}")]
+        public IActionResult ExternalLogin(string provider)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Auth", new { ReturnUrl = "/" });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+
+        [HttpGet("external-login-callback")]
+        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        {
+            if (remoteError != null)
+            {
+                return Redirect($"http://localhost:5173/login?error=Error from external provider: {remoteError}");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return Redirect($"http://localhost:5173/login?error=Nie udało się pobrać danych logowania.");
+            }
+
+            var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (signInResult.Succeeded)
+            {
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                var token = await GenerateJwtToken(user);
+                return Redirect($"http://localhost:5173/login?token={token}");
+            }
+
+            if (signInResult.IsNotAllowed)
+            {
+                return Redirect($"http://localhost:5173/login?error=Konto nie zostało aktywowane.");
+            }
+
+            // User doesn't exist, create them
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName) ?? "";
+            var lastName = info.Principal.FindFirstValue(ClaimTypes.Surname) ?? "";
+
+            if (email != null)
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    user = new ApplicationUser
+                    {
+                        UserName = email,
+                        Email = email,
+                        FirstName = firstName,
+                        LastName = lastName,
+                        EmailConfirmed = true // Trusted provider
+                    };
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (createResult.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(user, "User");
+                    }
+                }
+                
+                await _userManager.AddLoginAsync(user, info);
+                var token = await GenerateJwtToken(user);
+                return Redirect($"http://localhost:5173/login?token={token}");
+            }
+
+            return Redirect($"http://localhost:5173/login?error=Nie udało się zalogować.");
         }
 
         public class ForgotPasswordRequest

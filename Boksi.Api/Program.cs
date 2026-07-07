@@ -43,7 +43,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins("http://localhost:5173", "https://booksi.antfro112.workers.dev")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -67,6 +67,7 @@ builder.Services.AddIdentity<Boksi.Domain.Entities.ApplicationUser, Microsoft.As
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
     options.User.RequireUniqueEmail = true;
+    options.SignIn.RequireConfirmedEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -89,6 +90,18 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!))
     };
+})
+.AddGoogle(options =>
+{
+    var googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
+    options.ClientId = googleAuthNSection["ClientId"] ?? "DUMMY_CLIENT_ID";
+    options.ClientSecret = googleAuthNSection["ClientSecret"] ?? "DUMMY_CLIENT_SECRET";
+})
+.AddFacebook(options =>
+{
+    var facebookAuthNSection = builder.Configuration.GetSection("Authentication:Facebook");
+    options.AppId = facebookAuthNSection["AppId"] ?? "DUMMY_APP_ID";
+    options.AppSecret = facebookAuthNSection["AppSecret"] ?? "DUMMY_APP_SECRET";
 });
 
 builder.Services.AddAuthorization();
