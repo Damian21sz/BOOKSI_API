@@ -32,6 +32,11 @@ namespace Boksi.Infrastructure.Services
                     return headerSalonId.ToString();
                 }
 
+                if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var headerTenantId))
+                {
+                    return headerTenantId.ToString();
+                }
+
                 return null;
             }
         }

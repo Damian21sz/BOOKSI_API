@@ -19,9 +19,12 @@ namespace Boksi.Application.Schedules.Commands
 
         public async Task<bool> Handle(SetEmployeeScheduleCommand request, CancellationToken cancellationToken)
         {
-            // Usunięcie starych wpisów dla pracownika
+            // Usunięcie starych wpisów dla pracownika ale tylko w danym miesiącu
+            var startDate = new System.DateTime(request.Year, request.Month, 1, 0, 0, 0, System.DateTimeKind.Utc);
+            var endDate = startDate.AddMonths(1).AddTicks(-1);
+
             var existingSchedules = await _dbContext.EmployeeSchedules
-                .Where(s => s.EmployeeId == request.EmployeeId)
+                .Where(s => s.EmployeeId == request.EmployeeId && s.SpecificDate >= startDate && s.SpecificDate <= endDate)
                 .ToListAsync(cancellationToken);
 
             _dbContext.EmployeeSchedules.RemoveRange(existingSchedules);
