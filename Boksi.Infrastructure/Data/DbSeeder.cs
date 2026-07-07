@@ -61,7 +61,7 @@ namespace Boksi.Infrastructure.Data
             Salon salon = dbContext.Salons.FirstOrDefault(s => s.Id == Guid.Parse(testSalonId));
             if (salon == null)
             {
-                salon = new Salon { Id = Guid.Parse(testSalonId), Name = "Testowy Salon RIVIE" };
+                salon = new Salon { Id = Guid.Parse(testSalonId), Identifier = testSalonId, Name = "Testowy Salon RIVIE" };
                 dbContext.Salons.Add(salon);
                 await dbContext.SaveChangesAsync(default);
             }
@@ -94,6 +94,44 @@ namespace Boksi.Infrastructure.Data
 
                 dbContext.GalleryImages.Add(new GalleryImage { Id = Guid.NewGuid(), SalonId = testSalonId, EmployeeId = e1.Id, BeforeImageUrl = "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=500&auto=format&fit=crop", AfterImageUrl = "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=500&auto=format&fit=crop" });
 
+                await dbContext.SaveChangesAsync(default);
+                await dbContext.SaveChangesAsync(default);
+            }
+
+            // Generate schedules for July and August 2026 if not exist
+            if (!System.Linq.Queryable.Any(dbContext.EmployeeSchedules, s => s.SpecificDate.HasValue && s.SpecificDate.Value.Year == 2026 && (s.SpecificDate.Value.Month == 7 || s.SpecificDate.Value.Month == 8)))
+            {
+                var employees = System.Linq.Enumerable.ToList(dbContext.Employees.Where(e => e.SalonId == testSalonId));
+                var random = new Random(42);
+                
+                var startDt = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+                var endDt = new DateTime(2026, 8, 31, 0, 0, 0, DateTimeKind.Utc);
+                
+                for (var dt = startDt; dt <= endDt; dt = dt.AddDays(1))
+                {
+                    // 4 days of work per week. Monday to Thursday
+                    if (dt.DayOfWeek >= DayOfWeek.Monday && dt.DayOfWeek <= DayOfWeek.Thursday)
+                    {
+                        foreach (var emp in employees)
+                        {
+                            // 5 hours between 8 and 20. Start time between 8 and 15
+                            var startHour = random.Next(8, 16);
+                            var startSpan = TimeSpan.FromHours(startHour);
+                            var endSpan = startSpan.Add(TimeSpan.FromHours(5));
+                            
+                            dbContext.EmployeeSchedules.Add(new EmployeeSchedule 
+                            { 
+                                Id = Guid.NewGuid(), 
+                                SalonId = testSalonId, 
+                                EmployeeId = emp.Id, 
+                                SpecificDate = dt, 
+                                StartTime = startSpan, 
+                                EndTime = endSpan,
+                                IsWorkingDay = true
+                            });
+                        }
+                    }
+                }
                 await dbContext.SaveChangesAsync(default);
             }
         }
