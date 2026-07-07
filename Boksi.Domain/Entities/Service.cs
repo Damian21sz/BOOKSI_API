@@ -12,5 +12,7 @@ namespace Boksi.Domain.Entities
 
         public Guid CategoryId { get; set; }
         public ServiceCategory Category { get; set; } = null!;
+
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
     }
 }

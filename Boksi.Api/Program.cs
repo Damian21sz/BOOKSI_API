@@ -113,6 +113,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await Boksi.Infrastructure.Data.DbSeeder.SeedRolesAndUsersAsync(services);
+        await Boksi.Infrastructure.Data.DbSeeder.SeedSalonDataAsync(services);
     }
     catch (Exception ex)
     {
@@ -149,8 +150,7 @@ app.UseExceptionHandler(errorApp =>
             details = exception?.Message 
         });
     });
-});
-app.UseMiddleware<Boksi.Api.Middlewares.SubscriptionRequirementMiddleware>();
+});app.UseMiddleware<Boksi.Api.Middlewares.SubscriptionRequirementMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -61,6 +61,28 @@ namespace Boksi.Api.Controllers
             return Ok(new { Message = "Ustawienia pracownika zaktualizowane." });
         }
 
+        [HttpPut("{id}/profile")]
+        public async Task<IActionResult> UpdateProfile(System.Guid id, [FromBody] UpdateEmployeeProfileCommand command)
+        {
+            if (id != command.EmployeeId) return BadRequest("ID mismatch");
+            
+            var result = await _mediator.Send(command);
+            if (!result) return NotFound("Pracownik nie został znaleziony.");
+            
+            return Ok(new { Message = "Profil pracownika zaktualizowany." });
+        }
+
+        [HttpPut("{id}/services")]
+        public async Task<IActionResult> UpdateServices(System.Guid id, [FromBody] UpdateEmployeeServicesCommand command)
+        {
+            if (id != command.EmployeeId) return BadRequest("ID mismatch");
+            
+            var result = await _mediator.Send(command);
+            if (!result) return NotFound("Pracownik nie został znaleziony.");
+            
+            return Ok(new { Message = "Usługi pracownika zaktualizowane." });
+        }
+
         [HttpPost("{id}/gallery")]
         public async Task<IActionResult> AddGalleryImage(System.Guid id, [FromBody] Boksi.Domain.Entities.GalleryImage image, [FromServices] Boksi.Application.Interfaces.IApplicationDbContext dbContext)
         {
