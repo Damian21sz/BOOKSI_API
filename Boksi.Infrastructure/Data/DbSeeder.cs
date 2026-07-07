@@ -58,11 +58,16 @@ namespace Boksi.Infrastructure.Data
             var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
             string testSalonId = "11111111-1111-1111-1111-111111111111";
 
-            if (!System.Linq.Queryable.Any(dbContext.Salons))
+            Salon salon = dbContext.Salons.FirstOrDefault(s => s.Id == Guid.Parse(testSalonId));
+            if (salon == null)
             {
-                var salon = new Salon { Id = Guid.Parse(testSalonId), Name = "Testowy Salon RIVIE" };
+                salon = new Salon { Id = Guid.Parse(testSalonId), Name = "Testowy Salon RIVIE" };
                 dbContext.Salons.Add(salon);
+                await dbContext.SaveChangesAsync(default);
+            }
 
+            if (!System.Linq.Queryable.Any(dbContext.Employees))
+            {
                 var catHair = new ServiceCategory { Id = Guid.NewGuid(), SalonId = testSalonId, Name = "Włosy - Koloryzacja" };
                 var catNails = new ServiceCategory { Id = Guid.NewGuid(), SalonId = testSalonId, Name = "Paznokcie" };
                 dbContext.ServiceCategories.AddRange(catHair, catNails);

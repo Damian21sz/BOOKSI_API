@@ -112,6 +112,9 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        var dbContext = services.GetRequiredService<Boksi.Infrastructure.Data.ApplicationDbContext>();
+        await dbContext.Database.MigrateAsync();
+
         await Boksi.Infrastructure.Data.DbSeeder.SeedRolesAndUsersAsync(services);
         await Boksi.Infrastructure.Data.DbSeeder.SeedSalonDataAsync(services);
     }
