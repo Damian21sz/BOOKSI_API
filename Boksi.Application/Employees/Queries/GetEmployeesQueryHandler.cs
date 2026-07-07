@@ -24,8 +24,6 @@ namespace Boksi.Application.Employees.Queries
                 .Include(e => e.Services)
                 .ToListAsync(cancellationToken);
 
-            var schedules = await _dbContext.EmployeeSchedules.ToListAsync(cancellationToken);
-
             var employees = employeesEntities.Select(e => {
                 var empDto = new EmployeeDto
                 {
@@ -40,19 +38,8 @@ namespace Boksi.Application.Employees.Queries
                     VacationDaysLimit = e.VacationDaysLimit,
                     TargetMonthlyHours = e.TargetMonthlyHours,
                     Status = e.IsActive ? "Active" : "Inactive",
-                    Services = e.Services.Select(s => s.Id).ToList(),
-                    Schedule = new Dictionary<string, object>()
+                    Services = e.Services.Select(s => s.Id).ToList()
                 };
-
-                var empSchedules = schedules.Where(s => s.EmployeeId == e.Id && s.SpecificDate.HasValue).ToList();
-                foreach (var sch in empSchedules)
-                {
-                    if (sch.StartTime.HasValue && sch.EndTime.HasValue)
-                    {
-                        var dateStr = sch.SpecificDate.Value.ToString("yyyy-MM-dd");
-                        empDto.Schedule[dateStr] = new { start = sch.StartTime.Value.ToString(@"hh\:mm"), end = sch.EndTime.Value.ToString(@"hh\:mm") };
-                    }
-                }
 
                 return empDto;
             }).ToList();

@@ -16,8 +16,5 @@ namespace Boksi.Application.DTOs
         public int VacationDaysLimit { get; set; }
         public int TargetMonthlyHours { get; set; }
         public System.Collections.Generic.List<Guid> Services { get; set; } = new System.Collections.Generic.List<Guid>();
-        
-        // Basic representation of schedule and timeoffs for frontend initial load
-        public System.Collections.Generic.Dictionary<string, object> Schedule { get; set; } = new System.Collections.Generic.Dictionary<string, object>();
     }
 }

@@ -99,5 +99,30 @@ namespace Boksi.Api.Controllers
                 System.Linq.Queryable.Where(dbContext.GalleryImages, g => g.EmployeeId == id));
             return Ok(images);
         }
+        [HttpGet("schedules")]
+        public async Task<IActionResult> GetSchedules([FromQuery] string start, [FromQuery] string end, [FromServices] Boksi.Application.Interfaces.IApplicationDbContext dbContext)
+        {
+            if (!System.DateTime.TryParse(start, out var startDate) || !System.DateTime.TryParse(end, out var endDate))
+                return BadRequest("Invalid date format.");
+
+            // Convert to UTC as DB dates are UTC
+            startDate = System.DateTime.SpecifyKind(startDate, System.DateTimeKind.Utc);
+            endDate = System.DateTime.SpecifyKind(endDate, System.DateTimeKind.Utc);
+
+            var schedules = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                System.Linq.Queryable.Where(dbContext.EmployeeSchedules, s => s.SpecificDate >= startDate && s.SpecificDate <= endDate));
+
+            var result = System.Linq.Enumerable.Select(schedules, s => new 
+            {
+                id = s.Id,
+                employeeId = s.EmployeeId,
+                date = s.SpecificDate?.ToString("yyyy-MM-dd"),
+                start = s.StartTime?.ToString(@"hh\:mm"),
+                end = s.EndTime?.ToString(@"hh\:mm"),
+                isWorkingDay = s.IsWorkingDay
+            });
+
+            return Ok(result);
+        }
     }
 }
