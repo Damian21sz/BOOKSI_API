@@ -35,7 +35,7 @@ builder.Services.AddRateLimiter(options =>
 
 // Register application services
 builder.Services.AddScoped<Boksi.Application.Interfaces.IEmailService, Boksi.Infrastructure.Services.DummyEmailService>();
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Boksi.Application.Class1).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Boksi.Application.Interfaces.IEmailService).Assembly));
 
 // Configure CORS for the frontend
 builder.Services.AddCors(options =>
