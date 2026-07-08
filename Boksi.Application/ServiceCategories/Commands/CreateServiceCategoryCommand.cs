@@ -16,10 +16,12 @@ namespace Boksi.Application.ServiceCategories.Commands
     public class CreateServiceCategoryCommandHandler : IRequestHandler<CreateServiceCategoryCommand, Guid>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CreateServiceCategoryCommandHandler(IApplicationDbContext context)
+        public CreateServiceCategoryCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
         {
             _context = context;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Guid> Handle(CreateServiceCategoryCommand request, CancellationToken cancellationToken)
@@ -27,6 +29,7 @@ namespace Boksi.Application.ServiceCategories.Commands
             var category = new ServiceCategory
             {
                 Id = Guid.NewGuid(),
+                SalonId = _currentUserService.SalonId ?? "default-salon",
                 Name = request.Name,
                 Description = request.Description
             };
