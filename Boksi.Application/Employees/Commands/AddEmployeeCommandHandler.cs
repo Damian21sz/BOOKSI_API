@@ -81,7 +81,8 @@ namespace Boksi.Application.Employees.Commands
                 PhoneNumber = request.PhoneNumber,
                 JobTitle = request.JobTitle,
                 ApplicationUserId = user.Id,
-                IsActive = true
+                IsActive = true,
+                SalonId = _currentUserService.SalonId!
             };
 
             _dbContext.Employees.Add(employee);
