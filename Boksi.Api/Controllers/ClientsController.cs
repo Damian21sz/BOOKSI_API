@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MediatR;
 
 namespace Boksi.Api.Controllers
 {
@@ -13,10 +14,12 @@ namespace Boksi.Api.Controllers
     public class ClientsController : ControllerBase
     {
         private readonly IApplicationDbContext _dbContext;
+        private readonly IMediator _mediator;
 
-        public ClientsController(IApplicationDbContext dbContext)
+        public ClientsController(IApplicationDbContext dbContext, IMediator mediator)
         {
             _dbContext = dbContext;
+            _mediator = mediator;
         }
 
         [HttpPost("me/favorites")]
@@ -74,6 +77,21 @@ namespace Boksi.Api.Controllers
             await _dbContext.SaveChangesAsync(default);
 
             return NoContent();
+        }
+
+        [HttpGet("me/loyalty-cards")]
+        public async Task<IActionResult> GetMyLoyaltyCards()
+        {
+            // Mocking client ID for now, just like in other methods
+            var clientId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+            var query = new Boksi.Application.Clients.Queries.GetClientLoyaltyCardsQuery
+            {
+                ClientId = clientId
+            };
+
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
     }
 }

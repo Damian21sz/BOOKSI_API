@@ -1,4 +1,7 @@
 using Boksi.Application.Interfaces;
+using Boksi.Application.Salons.Queries;
+using Boksi.Application.Schedules.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,10 +15,12 @@ namespace Boksi.Api.Controllers
     public class SalonsController : ControllerBase
     {
         private readonly IApplicationDbContext _dbContext;
+        private readonly IMediator _mediator;
 
-        public SalonsController(IApplicationDbContext dbContext)
+        public SalonsController(IApplicationDbContext dbContext, IMediator mediator)
         {
             _dbContext = dbContext;
+            _mediator = mediator;
         }
 
         [HttpGet]
@@ -92,6 +97,21 @@ namespace Boksi.Api.Controllers
                 PageSize = pageSize,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             });
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSalonDetails(Guid id)
+        {
+            var result = await _mediator.Send(new GetSalonDetailsQuery { SalonId = id });
+            if (result == null) return NotFound("Salon not found.");
+            return Ok(result);
+        }
+
+        [HttpGet("{id}/available-terms")]
+        public async Task<IActionResult> GetAvailableTerms(Guid id, [FromQuery] Guid serviceId, [FromQuery] DateTime date)
+        {
+            var result = await _mediator.Send(new GetAvailableTermsQuery { SalonId = id, ServiceId = serviceId, Date = date });
+            return Ok(result);
         }
 
         private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
