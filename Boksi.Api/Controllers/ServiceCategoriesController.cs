@@ -12,7 +12,6 @@ namespace Boksi.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class ServiceCategoriesController : ControllerBase
     {
         private readonly IMediator _mediator;
