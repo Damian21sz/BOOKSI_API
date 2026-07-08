@@ -20,10 +20,12 @@ namespace Boksi.Application.Services.Commands
     public class CreateServiceCommandHandler : IRequestHandler<CreateServiceCommand, Guid>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CreateServiceCommandHandler(IApplicationDbContext context)
+        public CreateServiceCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
         {
             _context = context;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Guid> Handle(CreateServiceCommand request, CancellationToken cancellationToken)
@@ -31,6 +33,7 @@ namespace Boksi.Application.Services.Commands
             var service = new Service
             {
                 Id = Guid.NewGuid(),
+                SalonId = _currentUserService.SalonId ?? "default-salon",
                 Name = request.Name,
                 Description = request.Description,
                 Price = request.Price,

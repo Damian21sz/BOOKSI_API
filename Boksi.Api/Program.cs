@@ -115,7 +115,11 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        var dbContext = services.GetRequiredService<Boksi.Infrastructure.Data.ApplicationDbContext>();
+        await dbContext.Database.MigrateAsync();
+
         await Boksi.Infrastructure.Data.DbSeeder.SeedRolesAndUsersAsync(services);
+        await Boksi.Infrastructure.Data.DbSeeder.SeedSalonDataAsync(services);
     }
     catch (Exception ex)
     {
@@ -152,8 +156,7 @@ app.UseExceptionHandler(errorApp =>
             details = exception?.Message 
         });
     });
-});
-app.UseMiddleware<Boksi.Api.Middlewares.SubscriptionRequirementMiddleware>();
+});app.UseMiddleware<Boksi.Api.Middlewares.SubscriptionRequirementMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

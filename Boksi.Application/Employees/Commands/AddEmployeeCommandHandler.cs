@@ -15,23 +15,23 @@ namespace Boksi.Application.Employees.Commands
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly IApplicationDbContext _dbContext;
-        private readonly ITenantInfo _tenantInfo;
+        private readonly ICurrentUserService _currentUserService;
 
         public AddEmployeeCommandHandler(
             UserManager<ApplicationUser> userManager,
             IEmailService emailService,
             IApplicationDbContext dbContext,
-            ITenantInfo tenantInfo)
+            ICurrentUserService currentUserService)
         {
             _userManager = userManager;
             _emailService = emailService;
             _dbContext = dbContext;
-            _tenantInfo = tenantInfo;
+            _currentUserService = currentUserService;
         }
 
         public async Task<string> Handle(AddEmployeeCommand request, CancellationToken cancellationToken)
         {
-            if (_tenantInfo == null || string.IsNullOrEmpty(_tenantInfo.Id))
+            if (string.IsNullOrEmpty(_currentUserService.SalonId))
             {
                 throw new InvalidOperationException("Tenant not found in context.");
             }
@@ -81,14 +81,15 @@ namespace Boksi.Application.Employees.Commands
                 PhoneNumber = request.PhoneNumber,
                 JobTitle = request.JobTitle,
                 ApplicationUserId = user.Id,
-                IsActive = true
+                IsActive = true,
+                SalonId = _currentUserService.SalonId!
             };
 
             _dbContext.Employees.Add(employee);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             // Send Email
-            var salonName = _tenantInfo.Name ?? "naszego salonu";
+            var salonName = "naszego salonu"; // You could query the DB for the salon name using _currentUserService.SalonId
             var subject = $"Witaj w systemie Booksi - salon {salonName}";
             
             var emailBody = isNewUser 
