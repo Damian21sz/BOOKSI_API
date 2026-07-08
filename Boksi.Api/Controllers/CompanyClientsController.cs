@@ -48,6 +48,44 @@ namespace Boksi.Api.Controllers
             return Ok(clients);
         }
 
+        public class CreateClientRequest
+        {
+            public string FirstName { get; set; } = string.Empty;
+            public string LastName { get; set; } = string.Empty;
+            public string? Phone { get; set; }
+            public string? Email { get; set; }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateClient([FromBody] CreateClientRequest request)
+        {
+            var tenantId = _currentUserService.SalonId;
+            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing Salon context.");
+
+            var newClient = new Client
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PhoneNumber = request.Phone,
+                Email = string.IsNullOrEmpty(request.Email) ? "brak@email.com" : request.Email
+            };
+
+            _dbContext.Clients.Add(newClient);
+            await _dbContext.SaveChangesAsync(default);
+
+            return Ok(new
+            {
+                newClient.Id,
+                newClient.FirstName,
+                newClient.LastName,
+                PhoneNumber = newClient.PhoneNumber,
+                newClient.Email,
+                TotalVisits = 0,
+                LastVisit = "Brak wizyt"
+            });
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetClientDetails(Guid id)
         {
