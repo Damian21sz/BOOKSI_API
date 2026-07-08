@@ -15,7 +15,7 @@ namespace Boksi.Application.Schedules.Commands
 
     public class SetEmployeeScheduleCommand : IRequest<bool>
     {
-        public List<Guid> EmployeeIds { get; set; } = new List<Guid>();
+        public Guid EmployeeId { get; set; }
         public int Year { get; set; }
         public int Month { get; set; }
         public List<ScheduleEntryDto> Entries { get; set; } = new List<ScheduleEntryDto>();
