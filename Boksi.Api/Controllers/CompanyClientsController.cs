@@ -154,29 +154,40 @@ namespace Boksi.Api.Controllers
                 .OrderByDescending(c => c.GrantedAt)
                 .Select(c => new {
                     c.Id,
-                    Type = c.Type,
+                    type = c.ConsentType,
                     Date = c.GrantedAt.ToString("yyyy-MM-dd"),
-                    c.Granted
+                    granted = c.IsGranted
                 })
                 .ToListAsync();
 
             return Ok(consents);
         }
 
+        public class ConsentDto
+        {
+            public string Type { get; set; }
+            public bool Granted { get; set; }
+        }
+
         [HttpPost("{id}/consents")]
-        public async Task<IActionResult> UpdateClientConsent(Guid id, [FromBody] ClientConsent request)
+        public async Task<IActionResult> UpdateClientConsent(Guid id, [FromBody] ConsentDto request)
         {
             var tenantId = _currentUserService.SalonId;
             if (string.IsNullOrEmpty(tenantId)) return BadRequest();
 
-            request.ClientId = id;
-            request.SalonId = tenantId;
-            request.GrantedAt = DateTime.UtcNow;
+            var consent = new ClientConsent
+            {
+                ClientId = id,
+                SalonId = tenantId,
+                ConsentType = request.Type,
+                IsGranted = request.Granted,
+                GrantedAt = DateTime.UtcNow
+            };
 
-            _dbContext.ClientConsents.Add(request);
+            _dbContext.ClientConsents.Add(consent);
             await _dbContext.SaveChangesAsync(default);
 
-            return Ok(request);
+            return Ok(consent);
         }
     }
 }
