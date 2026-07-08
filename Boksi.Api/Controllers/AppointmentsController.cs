@@ -55,5 +55,23 @@ namespace Boksi.Api.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("{id}/approve")]
+        public async Task<IActionResult> ApproveAppointment(Guid id)
+        {
+            var result = await _mediator.Send(new ApproveAppointmentCommand { AppointmentId = id });
+            if (!result) return NotFound();
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/reject")]
+        public async Task<IActionResult> RejectAppointment(Guid id)
+        {
+            var result = await _mediator.Send(new RejectAppointmentCommand { AppointmentId = id });
+            if (!result) return NotFound();
+
+            return NoContent();
+        }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Boksi.Api.Hubs;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -43,6 +44,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Boksi
 // Add custom services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Boksi.Application.Interfaces.ICurrentUserService, Boksi.Infrastructure.Services.CurrentUserService>();
+builder.Services.AddScoped<Boksi.Application.Interfaces.INotificationsService, Boksi.Api.Services.SignalRNotificationsService>();
 
 // Configure CORS for the frontend
 builder.Services.AddCors(options =>
@@ -162,5 +164,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<Boksi.Api.Hubs.ChatHub>("/chathub");
+app.MapHub<NotificationsHub>("/hubs/notifications");
 
 app.Run();
