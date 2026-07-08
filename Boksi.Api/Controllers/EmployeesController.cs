@@ -100,7 +100,7 @@ namespace Boksi.Api.Controllers
             return Ok(images);
         }
         [HttpGet("schedules")]
-        public async Task<IActionResult> GetSchedules([FromQuery] string start, [FromQuery] string end, [FromServices] Boksi.Application.Interfaces.IApplicationDbContext dbContext)
+        public async Task<IActionResult> GetSchedules([FromQuery] string start, [FromQuery] string end, [FromQuery] System.Guid? employeeId, [FromServices] Boksi.Application.Interfaces.IApplicationDbContext dbContext)
         {
             if (!System.DateTime.TryParse(start, out var startDate) || !System.DateTime.TryParse(end, out var endDate))
                 return BadRequest("Invalid date format.");
@@ -109,8 +109,14 @@ namespace Boksi.Api.Controllers
             startDate = System.DateTime.SpecifyKind(startDate, System.DateTimeKind.Utc);
             endDate = System.DateTime.SpecifyKind(endDate, System.DateTimeKind.Utc);
 
-            var schedules = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-                System.Linq.Queryable.Where(dbContext.EmployeeSchedules, s => s.SpecificDate >= startDate && s.SpecificDate <= endDate));
+            var query = System.Linq.Queryable.Where(dbContext.EmployeeSchedules, s => s.SpecificDate >= startDate && s.SpecificDate <= endDate);
+            
+            if (employeeId.HasValue)
+            {
+                query = System.Linq.Queryable.Where(query, s => s.EmployeeId == employeeId.Value);
+            }
+
+            var schedules = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query);
 
             var result = System.Linq.Enumerable.Select(schedules, s => new 
             {
