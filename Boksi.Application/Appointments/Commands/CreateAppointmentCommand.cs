@@ -21,11 +21,13 @@ namespace Boksi.Application.Appointments.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentUserService _currentUserService;
+        private readonly INotificationsService _notificationsService;
 
-        public CreateAppointmentCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+        public CreateAppointmentCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService, INotificationsService notificationsService)
         {
             _context = context;
             _currentUserService = currentUserService;
+            _notificationsService = notificationsService;
         }
 
         public async Task<Guid> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
@@ -45,6 +47,17 @@ namespace Boksi.Application.Appointments.Commands
 
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Notify salon via SignalR
+            await _notificationsService.SendAppointmentCreatedNotificationAsync(appointment.SalonId, new 
+            {
+                id = appointment.Id,
+                clientName = "Nowy Klient", // Mocking client name for now
+                serviceName = request.Notes,
+                date = appointment.StartTime.ToString("yyyy-MM-dd"),
+                timeStart = appointment.StartTime.ToString("HH:mm"),
+                status = appointment.Status.ToString()
+            }, cancellationToken);
 
             return appointment.Id;
         }
